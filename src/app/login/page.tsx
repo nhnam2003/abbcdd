@@ -9,6 +9,7 @@ import { AuthService } from "@/services/auth.service";
 import { AlertCircle, Loader2, KeyRound } from "lucide-react";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
+import OfflineBanner from "@/components/pwa/offline-banner";
 
 const demoAccounts = [
   { role: "Quản trị viên", email: "admin@mayguitar.com", password: "admin123" },
@@ -78,6 +79,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 dark:bg-neutral-950 sm:px-6 lg:px-8">
+      <OfflineBanner />
       <div className="fade-in w-full max-w-md space-y-8">
         <div className="flex flex-col items-center">
           <Link href="/" className="mb-2 flex items-center gap-2 text-xl font-semibold tracking-tight">

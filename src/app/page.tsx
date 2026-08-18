@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import Image from "next/image";
 import LandingImage from "@/components/landing-image";
+import ThemeToggle from "@/components/theme-toggle";
 import {
   Guitar,
   Music,
@@ -151,12 +152,15 @@ export default function Home() {
             <a href="#giang-vien" className="transition-colors hover:text-brand-dark dark:hover:text-brand-light">Giảng viên</a>
             <a href="#lien-he" className="transition-colors hover:text-brand-dark dark:hover:text-brand-light">Liên hệ</a>
           </nav>
-          <a
-            href="#lien-he"
-            className="rounded-full bg-brand px-5 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-brand-dark"
-          >
-            Đăng ký học
-          </a>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <a
+              href="#lien-he"
+              className="rounded-full bg-brand px-5 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-brand-dark"
+            >
+              Đăng ký học
+            </a>
+          </div>
         </div>
       </header>
 

@@ -3,6 +3,8 @@
 import Sidebar from "@/components/sidebar";
 import Navbar from "@/components/navbar";
 import ProtectedRoute from "@/components/protected-route";
+import OfflineBanner from "@/components/pwa/offline-banner";
+import InstallPrompt from "@/components/pwa/install-prompt";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
@@ -20,6 +22,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <ProtectedRoute>
       <div className="flex h-dvh w-full overflow-hidden bg-neutral-50 dark:bg-neutral-950">
+        <OfflineBanner />
+        <InstallPrompt />
         <Sidebar className="hidden lg:flex" />
 
         {sidebarOpen && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/auth-context";
+import ThemeToggle from "@/components/theme-toggle";
 import { LogOut, Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -37,16 +38,17 @@ export default function Navbar() {
           <span>Trung tâm May Center</span>
         </div>
 
-        <div className="flex items-center gap-2 border-l border-neutral-200 pl-3 dark:border-neutral-800 sm:pl-4">
-          <div className="hidden text-right md:block">
-            <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-              {user?.displayName || "Người dùng"}
-            </p>
-            <p className="mt-0.5 text-[10px] text-neutral-500 dark:text-neutral-500">
-              {translateRole(user?.role)}
-            </p>
-          </div>
-          <button
+<div className="flex items-center gap-2 border-l border-neutral-200 pl-3 dark:border-neutral-800 sm:pl-4">
+            <div className="hidden text-right md:block">
+              <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                {user?.displayName || "Người dùng"}
+              </p>
+              <p className="mt-0.5 text-[10px] text-neutral-500 dark:text-neutral-500">
+                {translateRole(user?.role)}
+              </p>
+            </div>
+            <ThemeToggle />
+            <button
             onClick={logout}
             title="Đăng xuất"
             className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600 transition-all hover:bg-red-50 hover:text-red-500 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-red-950/30 dark:hover:text-red-300"

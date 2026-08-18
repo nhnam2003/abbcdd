@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
+import { ThemeProvider } from "@/components/theme-context";
+import ServiceWorkerRegister from "@/components/pwa/service-worker-register";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,11 +18,27 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "May Center - Dạy đàn Guitar tại Đà Nẵng",
   description: "Trung tâm dạy đàn guitar tại Đà Nẵng — khóa học từ cơ bản đến nâng cao, giảng viên tận tâm, lộ trình bài bản.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "May Center",
+  },
   icons: {
-    icon: "/logo/logo.jpg",
-    apple: "/logo/logo.jpg",
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
+
+export const viewport: Viewport = {
+  themeColor: process.env.NEXT_PUBLIC_COLOR_PRIMARY ?? "#A07828",
+  colorScheme: "light dark",
+};
+
+const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("may_guitar_theme");if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.style.colorScheme="dark";}else{document.documentElement.style.colorScheme="light";}}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const brandStyle = {
@@ -34,13 +52,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="vi"
+      suppressHydrationWarning
       style={brandStyle}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+            <ServiceWorkerRegister />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

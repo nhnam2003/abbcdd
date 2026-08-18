@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --brand-primary: #A07828;
   --brand-primary-dark: #5A3C0E;
@@ -30,16 +32,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0F0D0A;
-    --foreground: #F0EBE0;
-    --surface: #1A1610;
-    --surface-muted: #231E16;
-    --border: rgba(212, 184, 150, 0.12);
-    --glass-bg: rgba(15, 13, 10, 0.80);
-    --glass-border: rgba(212, 184, 150, 0.10);
-  }
+.dark {
+  --background: #0F0D0A;
+  --foreground: #F0EBE0;
+  --surface: #1A1610;
+  --surface-muted: #231E16;
+  --border: rgba(212, 184, 150, 0.12);
+  --glass-bg: rgba(15, 13, 10, 0.80);
+  --glass-border: rgba(212, 184, 150, 0.10);
 }
 
 body {
