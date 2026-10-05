@@ -62,6 +62,12 @@ export function toVietnameseAuthError(code?: string): string {
       return "Chưa cấu hình Firebase (.env.local). Liên hệ quản trị viên.";
     case "app/profile-missing":
       return "Tài khoản chưa có hồ sơ trong Firestore. Liên hệ admin để gán quyền.";
+    case "permission-denied":
+    case "firestore/permission-denied":
+      return "Bạn không có quyền đọc hồ sơ (Rules chặn). Liên hệ admin kiểm tra role trong users/{uid}.";
+    case "unavailable":
+    case "firestore/unavailable":
+      return "Mất kết nối Firestore. Kiểm tra mạng rồi thử lại.";
     default:
       return "Đã xảy ra lỗi khi xác thực. Vui lòng thử lại.";
   }

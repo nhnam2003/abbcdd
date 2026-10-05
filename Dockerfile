@@ -8,7 +8,6 @@ RUN apk add --no-cache libc6-compat wget
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1 \
-    NODE_ENV=production \
     NPM_CONFIG_AUDIT=false \
     NPM_CONFIG_FUND=false
 
@@ -17,8 +16,8 @@ FROM base AS deps
 COPY package.json package-lock.json* ./
 
 RUN --mount=type=cache,target=/root/.npm \
-    if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; \
-    else npm install --no-audit --no-fund; fi
+    if [ -f package-lock.json ]; then npm ci --include=dev --no-audit --no-fund; \
+    else npm install --include=dev --no-audit --no-fund; fi
 
 FROM base AS builder
 
@@ -29,6 +28,16 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1 \
     NODE_ENV=production
+
+# Firebase client config: NEXT_PUBLIC_* đóng cứng vào bundle lúc build,
+# nên phải truyền qua build-args (xem docker-compose.yml). Không COPY .env* vào image.
+ARG NEXT_PUBLIC_FIREBASE_API_KEY=""
+ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=""
+ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID=""
+ARG NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=""
+ARG NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=""
+ARG NEXT_PUBLIC_FIREBASE_APP_ID=""
+ARG NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=""
 
 RUN --mount=type=cache,target=/app/.next/cache \
     npm run build

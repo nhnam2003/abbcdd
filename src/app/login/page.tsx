@@ -64,6 +64,7 @@ export default function LoginPage() {
       }
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
+      console.error("[login-submit]", code, err);
       setError(toVietnameseAuthError(code));
     } finally {
       setLoading(false);
@@ -79,6 +80,7 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;
+      console.error("[login-google]", code, err);
       setError(toVietnameseAuthError(code));
     } finally {
       setGoogleLoading(false);
