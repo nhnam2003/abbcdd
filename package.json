@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate": "node scripts/migrate-to-firestore.mjs",
+    "seed:users": "node scripts/seed-auth-users.mjs"
   },
   "dependencies": {
+    "firebase": "^12.19.0",
+    "firebase-admin": "^14.5.0",
     "lucide-react": "^1.31.0",
     "next": "16.3.0",
     "react": "19.2.8",

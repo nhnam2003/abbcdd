@@ -1,8 +1,21 @@
 {
   "firestore": {
-    "database": "default",
+    "database": "(default)",
     "location": "asia-southeast1",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "May Center Guitar",
+        "supportEmail": "admin@mayguitar.com"
+      },
+      "anonymous": false
+    }
   }
 }

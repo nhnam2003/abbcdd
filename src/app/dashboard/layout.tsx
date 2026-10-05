@@ -6,10 +6,16 @@ import ProtectedRoute from "@/components/protected-route";
 import OfflineBanner from "@/components/pwa/offline-banner";
 import InstallPrompt from "@/components/pwa/install-prompt";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { rolesForPath } from "@/lib/role-routes";
+
+// P0-01: chặn URL trực tiếp theo role (docs/01). Map role nằm ở lib/role-routes.ts,
+// ProtectedRoute chặn 403 ở client. Rules Firestore chặn secure ở server (P3-04).
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!sidebarOpen) return;
@@ -20,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [sidebarOpen]);
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={rolesForPath(pathname ?? "/dashboard")}>
       <div className="flex h-dvh w-full overflow-hidden bg-neutral-50 dark:bg-neutral-950">
         <OfflineBanner />
         <InstallPrompt />

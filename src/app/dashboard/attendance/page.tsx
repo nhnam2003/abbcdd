@@ -90,11 +90,8 @@ export default function AttendancePage() {
           setRecords(sheet.records);
         } else {
           const enrolledStudentIds = selectedClass?.studentIds || [];
-          let enrolledStudents = students.filter(s => enrolledStudentIds.includes(s.id));
-
-          if (enrolledStudents.length === 0) {
-            enrolledStudents = students;
-          }
+          // P0 fix: lớp rỗng thì báo trống, KHÔNG fallback lấy tất cả học viên (tránh chấm nhầm).
+          const enrolledStudents = students.filter(s => enrolledStudentIds.includes(s.id));
 
           const defaultRecords: AttendanceRecord[] = enrolledStudents.map(student => ({
             studentId: student.id,

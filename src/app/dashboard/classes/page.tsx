@@ -8,6 +8,7 @@ import Card from "@/components/ui/card";
 import Input from "@/components/ui/input";
 import Select from "@/components/ui/select";
 import Modal from "@/components/ui/modal";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import Loading from "@/components/ui/loading";
 import EmptyState from "@/components/ui/empty-state";
 import Badge from "@/components/ui/badge";
@@ -61,14 +62,24 @@ export default function ClassesPage() {
     setShowModal(true);
   };
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   const handleDelete = async (id: string) => {
-    if (confirm("Bạn có chắc chắn muốn xóa lớp học này?")) {
-      try {
-        await ClassService.deleteClass(id);
-        setClasses(classes.filter((c) => c.id !== id));
-      } catch (err) {
-        console.error(err);
-      }
+    setDeletingId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingId) return;
+    setDeleting(true);
+    try {
+      await ClassService.deleteClass(deletingId);
+      setClasses((prev) => prev.filter((c) => c.id !== deletingId));
+      setDeletingId(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -266,6 +277,15 @@ export default function ClassesPage() {
           </form>
         </Modal>
       )}
+      <ConfirmDialog
+        open={deletingId !== null}
+        title="Xóa lớp học?"
+        message="Xóa sẽ xóa hóa đơn và buổi điểm danh của lớp này. Không thể hoàn tác."
+        confirmLabel="Xóa lớp"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeletingId(null)}
+      />
     </div>
   );
 }

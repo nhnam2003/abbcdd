@@ -8,6 +8,7 @@ import Card from "@/components/ui/card";
 import Input from "@/components/ui/input";
 import Select from "@/components/ui/select";
 import Modal from "@/components/ui/modal";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 import Loading from "@/components/ui/loading";
 import EmptyState from "@/components/ui/empty-state";
 
@@ -60,19 +61,31 @@ export default function StudentsPage() {
     setShowModal(true);
   };
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
-    if (confirm("Bạn có chắc chắn muốn xóa học viên này?")) {
-      try {
-        await StudentService.deleteStudent(id);
-        setStudents(students.filter((s) => s.id !== id));
-      } catch (err) {
-        console.error(err);
-      }
+    setDeletingId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingId) return;
+    setDeleting(true);
+    try {
+      await StudentService.deleteStudent(deletingId);
+      setStudents((prev) => prev.filter((s) => s.id !== deletingId));
+      setDeletingId(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     try {
       if (editingStudent) {
         await StudentService.updateStudent(editingStudent.id, formData);
@@ -87,7 +100,7 @@ export default function StudentsPage() {
       }
       setShowModal(false);
     } catch (err) {
-      console.error(err);
+      setFormError(err instanceof Error ? err.message : "Không lưu được. Kiểm tra SĐT/email/học phí.");
     }
   };
 
@@ -170,6 +183,9 @@ export default function StudentsPage() {
           onClose={() => setShowModal(false)}
         >
           <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+            {formError && (
+              <p className="rounded-xl border border-red-100 bg-red-50 p-3 text-xs text-red-600">{formError}</p>
+            )}
             <Input
               label="Họ và tên học viên"
               type="text"
@@ -233,6 +249,15 @@ export default function StudentsPage() {
           </form>
         </Modal>
       )}
+      <ConfirmDialog
+        open={deletingId !== null}
+        title="Xóa học viên?"
+        message="Xóa sẽ gỡ học viên khỏi lớp, xóa hóa đơn và điểm danh liên quan. Không thể hoàn tác."
+        confirmLabel="Xóa học viên"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeletingId(null)}
+      />
     </div>
   );
 }

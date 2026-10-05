@@ -5,26 +5,26 @@ import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { AuthService } from "@/services/auth.service";
-import { AlertCircle, Loader2, KeyRound } from "lucide-react";
+import { AuthService, toVietnameseAuthError } from "@/services/auth.service";
+import { AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import OfflineBanner from "@/components/pwa/offline-banner";
 
-const demoAccounts = [
-  { role: "Quản trị viên", email: "admin@mayguitar.com", password: "admin123" },
-  { role: "Giáo viên", email: "teacher@mayguitar.com", password: "teacher123" },
-  { role: "Học viên", email: "student@mayguitar.com", password: "student123" },
-];
+type Mode = "login" | "signup" | "forgot";
 
 export default function LoginPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -34,36 +34,54 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Vui lòng nhập email và mật khẩu.");
+    setError(null);
+    setInfo(null);
+
+    if (!email) {
+      setError("Vui lòng nhập email.");
+      return;
+    }
+    if (mode !== "forgot" && !password) {
+      setError("Vui lòng nhập mật khẩu.");
       return;
     }
 
-    setError(null);
     setLoading(true);
-
     try {
-      await AuthService.signIn(email, password);
-      router.push("/dashboard");
-    } catch (err: unknown) {
-      const errorCode = (err as { code?: string }).code;
-      switch (errorCode) {
-        case "auth/invalid-email":
-          setError("Định dạng email không hợp lệ.");
-          break;
-        case "auth/user-not-found":
-        case "auth/wrong-password":
-        case "auth/invalid-credential":
-          setError("Email hoặc mật khẩu không đúng.");
-          break;
-        case "auth/too-many-requests":
-          setError("Tài khoản tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau.");
-          break;
-        default:
-          setError("Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.");
+      if (mode === "login") {
+        await AuthService.signIn(email, password);
+        router.push("/dashboard");
+      } else if (mode === "signup") {
+        if (!displayName.trim()) {
+          setError("Vui lòng nhập họ tên.");
+          return;
+        }
+        await AuthService.signUp(email, password, displayName);
+        router.push("/dashboard");
+      } else {
+        await AuthService.resetPassword(email);
+        setInfo("Đã gửi email đặt lại mật khẩu. Kiểm tra hộp thư (kể cả Spam).");
       }
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code;
+      setError(toVietnameseAuthError(code));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setError(null);
+    setInfo(null);
+    setGoogleLoading(true);
+    try {
+      await AuthService.signInWithGoogle();
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code;
+      setError(toVietnameseAuthError(code));
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -94,7 +112,7 @@ export default function LoginPage() {
             </div>
           </Link>
           <h2 className="mt-4 text-center text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-            Đăng nhập hệ thống
+            {mode === "login" ? "Đăng nhập hệ thống" : mode === "signup" ? "Tạo tài khoản học viên" : "Quên mật khẩu"}
           </h2>
           <p className="mt-1.5 text-center text-xs text-neutral-400">
             Dành cho Quản trị viên, Giáo viên và Học viên
@@ -102,12 +120,55 @@ export default function LoginPage() {
         </div>
 
         <div className="apple-glass rounded-2xl border border-neutral-200 bg-white p-8 shadow-lg dark:border-neutral-800 dark:bg-neutral-900/60">
+          <Button
+            type="button"
+            size="xl"
+            className="w-full"
+            onClick={handleGoogle}
+            disabled={googleLoading || loading}
+          >
+            {googleLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Đang mở Google...
+              </>
+            ) : (
+              "Đăng nhập bằng Google"
+            )}
+          </Button>
+
+          <div className="my-5 flex items-center gap-3 text-[11px] text-neutral-400">
+            <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
+            <span>hoặc bằng email</span>
+            <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
+          </div>
+
           <form className="space-y-5" onSubmit={handleSubmit}>
             {error && (
               <div className="flex items-start gap-2.5 rounded-xl border border-red-100 bg-red-50 p-3.5 text-xs text-red-600 dark:border-red-950 dark:bg-red-950/30 dark:text-red-400">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{error}</span>
               </div>
+            )}
+            {info && (
+              <div className="flex items-start gap-2.5 rounded-xl border border-green-100 bg-green-50 p-3.5 text-xs text-green-700 dark:border-green-950 dark:bg-green-950/30 dark:text-green-400">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{info}</span>
+              </div>
+            )}
+
+            {mode === "signup" && (
+              <Input
+                label="Họ tên"
+                size="md"
+                id="displayName"
+                name="displayName"
+                autoComplete="name"
+                required
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Nguyễn Văn A"
+              />
             )}
 
             <Input
@@ -120,62 +181,86 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@mayguitar.com"
+              placeholder="ban@example.com"
             />
 
-            <Input
-              label="Mật khẩu"
-              size="md"
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
+            {mode !== "forgot" && (
+              <Input
+                label="Mật khẩu"
+                size="md"
+                id="password"
+                name="password"
+                type="password"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            )}
 
             <Button type="submit" size="xl" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang đăng nhập...
+                  Đang xử lý...
                 </>
-              ) : (
+              ) : mode === "login" ? (
                 "Đăng nhập"
+              ) : mode === "signup" ? (
+                "Tạo tài khoản"
+              ) : (
+                "Gửi email đặt lại"
               )}
             </Button>
           </form>
 
-          <div className="mt-8 border-t border-neutral-200 pt-6 text-center dark:border-neutral-800">
-            <div className="inline-flex items-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500">
-              <KeyRound className="h-3.5 w-3.5" />
-              <span>Tài khoản demo (dữ liệu giả lập)</span>
-            </div>
-            <div className="mt-3 space-y-2 text-left">
-              {demoAccounts.map((acc) => (
+          <div className="mt-6 flex flex-col items-center gap-2 text-xs">
+            {mode === "login" && (
+              <>
                 <button
-                  key={acc.email}
                   type="button"
+                  className="font-medium text-neutral-500 transition-colors hover:text-neutral-950 dark:hover:text-white"
                   onClick={() => {
-                    setEmail(acc.email);
-                    setPassword(acc.password);
+                    setMode("forgot");
                     setError(null);
+                    setInfo(null);
                   }}
-                  className="flex w-full flex-col items-start gap-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-2.5 text-[11px] transition-all hover:border-brand hover:bg-white dark:border-neutral-800 dark:bg-neutral-950 dark:hover:border-brand-light dark:hover:bg-neutral-900 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <span className="font-semibold text-neutral-700 dark:text-neutral-300">{acc.role}</span>
-                  <span className="break-all font-mono text-neutral-500 dark:text-neutral-500 sm:break-normal">
-                    {acc.email} / {acc.password}
-                  </span>
+                  Quên mật khẩu?
                 </button>
-              ))}
-            </div>
-            <p className="mx-auto mt-3 max-w-xs text-[11px] leading-relaxed text-neutral-400/90">
-              Bấm vào tài khoản để tự động điền thông tin, sau đó nhấn nút Đăng nhập.
-            </p>
+                <button
+                  type="button"
+                  className="font-medium text-neutral-500 transition-colors hover:text-neutral-950 dark:hover:text-white"
+                  onClick={() => {
+                    setMode("signup");
+                    setError(null);
+                    setInfo(null);
+                  }}
+                >
+                  Chưa có tài khoản? Đăng ký học viên mới
+                </button>
+              </>
+            )}
+            {mode !== "login" && (
+              <button
+                type="button"
+                className="font-medium text-neutral-500 transition-colors hover:text-neutral-950 dark:hover:text-white"
+                onClick={() => {
+                  setMode("login");
+                  setError(null);
+                  setInfo(null);
+                }}
+              >
+                ← Về đăng nhập
+              </button>
+            )}
           </div>
+
+          <p className="mx-auto mt-4 max-w-xs text-center text-[11px] leading-relaxed text-neutral-400/90">
+            Tài khoản do Firebase Auth quản lý. Phân quyền (admin/teacher/student) do admin gán trong
+            Firestore collection <span className="font-mono">users</span>.
+          </p>
         </div>
 
         <p className="text-center text-xs">
