@@ -1,0 +1,51 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "deliveryReports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "appId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "organizationId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "DENSE"
+    },
+    {
+      "collectionGroup": "userSegments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "appId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "DENSE"
+    }
+  ],
+  "fieldOverrides": []
+}
